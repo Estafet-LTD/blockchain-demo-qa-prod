@@ -6,7 +6,7 @@ node('maven') {
 	  ])
 	])
 
-	def project = params.PROJECT
+	def project = "prod"
 
 	stage("checkout") {
 		git branch: "master", url: "https://github.com/${params.GITHUB}/${params.REPO}"
