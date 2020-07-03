@@ -1,0 +1,40 @@
+@NonCPS
+def getPassive(json) {
+	def matcher = new groovy.json.JsonSlurper().parseText(json).spec.to.name =~ /(green|blue)(.+)/
+	String namespace = matcher[0][1]
+	return namespace.equals("green") ? "blue" : "green" 
+}
+
+@NonCPS
+def getRouteName(json) {
+	return new groovy.json.JsonSlurper().parseText(json).items[0].metadata.name
+}
+
+node('maven') {
+
+	properties([
+	  parameters([
+	     string(name: 'GITHUB'), 
+	     string(name: 'PRODUCT'), 
+	     string(name: 'REPO'), 
+	     string(name: 'PROJECT'),
+	     string(name: 'ENV'),
+	  ])
+	])
+
+	def project = "${params.PRODUCT}-prod"
+	def product = params.PRODUCT
+	def env = params.ENV
+
+	stage("checkout") {
+		git branch: "master", url: "https://github.com/${params.GITHUB}/${params.REPO}"
+	}
+
+	stage("tests") {
+		withMaven(mavenSettingsConfig: 'maven') {
+			sh "mvn clean test -Denv=$env"
+		} 
+	}
+	
+}
+
